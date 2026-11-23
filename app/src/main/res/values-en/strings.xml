@@ -74,4 +74,5 @@
     <string name="calibration_cleared">Camera calibration cleared.</string>
     <string name="external_camera">Android external camera</string>
     <string name="external_help">Opens a USB or factory camera exposed by the Android camera system.</string>
+    <string name="dashboard_title">View your surroundings</string>
 </resources>

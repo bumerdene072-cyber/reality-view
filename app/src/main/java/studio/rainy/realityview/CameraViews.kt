@@ -41,6 +41,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.ui.PlayerView
+import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -200,6 +201,15 @@ fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
     var player by remember(address) { mutableStateOf<ExoPlayer?>(null) }
     var attempt by remember(address) { mutableIntStateOf(0) }
     var status by remember(address, attempt) { mutableIntStateOf(R.string.connecting) }
+    var remaining by remember(address) { mutableIntStateOf(3) }
+    var foreground by remember(owner) { mutableStateOf(false) }
+    LaunchedEffect(address, foreground, status, attempt) {
+        if (foreground && status == R.string.network_error && remaining > 0) {
+            delay(1_000L shl (3 - remaining))
+            remaining--
+            attempt++
+        }
+    }
     DisposableEffect(address, attempt, owner) {
         fun stop() {
             player?.release()
@@ -208,11 +218,15 @@ fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
         val lifecycle = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_START -> {
+                    foreground = true
                     status = R.string.connecting
                     player = ExoPlayer.Builder(context).build().apply {
                         volume = 0f
                         addListener(object : Player.Listener {
-                            override fun onRenderedFirstFrame() { status = R.string.connected }
+                            override fun onRenderedFirstFrame() {
+                                status = R.string.connected
+                                remaining = 3
+                            }
                             override fun onPlayerError(error: PlaybackException) { status = R.string.network_error }
                             override fun onPlaybackStateChanged(playbackState: Int) {
                                 if (playbackState == Player.STATE_BUFFERING) status = R.string.connecting
@@ -229,7 +243,10 @@ fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
                         playWhenReady = true
                     }
                 }
-                Lifecycle.Event.ON_STOP -> stop()
+                Lifecycle.Event.ON_STOP -> {
+                    foreground = false
+                    stop()
+                }
                 else -> Unit
             }
         }
@@ -242,7 +259,7 @@ fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
     Column(modifier) {
         Text(stringResource(status))
         if (status == R.string.network_error) {
-            OutlinedButton(onClick = { attempt++ }) { Text(stringResource(R.string.retry)) }
+            OutlinedButton(onClick = { remaining = 3; attempt++ }) { Text(stringResource(R.string.retry)) }
         }
         AndroidView(factory = { PlayerView(it).apply { useController = false } },
             update = { it.player = player },

@@ -74,4 +74,5 @@
     <string name="calibration_cleared">Камерын тохируулгыг арилгалаа.</string>
     <string name="external_camera">Android-д танигдсан гадаад камер</string>
     <string name="external_help">Android камерын системд нэмэгдсэн USB эсвэл үйлдвэрийн камер байвал нээнэ.</string>
+    <string name="dashboard_title">Орчноо харах</string>
 </resources>

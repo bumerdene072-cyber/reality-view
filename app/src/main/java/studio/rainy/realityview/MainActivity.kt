@@ -10,7 +10,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private enum class Screen(val label: Int) {
+internal enum class Screen(val label: Int) {
     Home(R.string.home), Camera(R.string.camera), Reality(R.string.reality),
     Surround(R.string.surround), Compatibility(R.string.compatibility), Settings(R.string.settings)
 }
@@ -59,105 +58,98 @@ private fun RainyApp() {
 
     MaterialTheme(colorScheme = colors) {
         Scaffold { insets ->
-            Column(Modifier.padding(insets).fillMaxSize().widthIn(max = 1000.dp)) {
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 14.dp)) {
-                    Text(stringResource(R.string.studio), style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary)
-                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
-                }
-                Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Screen.entries.forEach { screen ->
-                        FilterChip(selected = page == screen.name, onClick = { page = screen.name },
-                            label = { Text(stringResource(screen.label)) })
-                    }
-                }
-                key(page) {
-                    Column(
-                        Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        when (Screen.valueOf(page)) {
-                            Screen.Home -> {
-                                Heading(R.string.home)
-                                Text(stringResource(R.string.intro))
-                                GpsStatus()
-                                ElevatedCard {
-                                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(stringResource(R.string.camera), style = MaterialTheme.typography.titleLarge)
-                                        Text(stringResource(R.string.parked))
-                                        Button(onClick = { page = Screen.Camera.name }) { Text(stringResource(R.string.open_camera)) }
-                                        OutlinedButton(onClick = { page = Screen.Reality.name }) { Text(stringResource(R.string.open_ai)) }
-                                    }
-                                }
-                            }
-                            Screen.Camera -> {
-                                Heading(R.string.camera)
-                                var network by rememberSaveable { mutableStateOf(false) }
-                                var external by rememberSaveable { mutableStateOf(false) }
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    FilterChip(!network, { network = false }, { Text(stringResource(R.string.device)) })
-                                    FilterChip(network, { network = true }, { Text("RTSP") })
-                                }
-                                if (network) NetworkInput("single", R.string.network)
-                                else {
-                                    Toggle(R.string.external_camera, external) { external = it }
-                                    if (external) Text(stringResource(R.string.external_help))
-                                    else Toggle(R.string.selfie, front) {
-                                        front = it
-                                        prefs.edit().putBoolean("front", it).apply()
-                                    }
-                                    DeviceCamera(front, false, 200, external = external)
-                                }
-                            }
-                            Screen.Reality -> {
-                                Heading(R.string.reality)
-                                val calibration = remember { readRoadCalibration(context) }
-                                var road by rememberSaveable { mutableStateOf(false) }
-                                val projectionAvailable = calibration != null && !front
-                                if (projectionAvailable) Toggle(R.string.road_view, road) { road = it }
-                                else OutlinedButton(onClick = { page = Screen.Settings.name }) {
-                                    Text(stringResource(R.string.calibration))
-                                }
-                                Text(stringResource(if (road && projectionAvailable) R.string.road_estimate else R.string.ai_description))
-                                DeviceCamera(front, true, if (fast) 130 else 300,
-                                    roadCalibration = calibration.takeIf { road && projectionAvailable })
-                            }
-                            Screen.Surround -> {
-                                Heading(R.string.surround)
-                                Text(stringResource(R.string.surround_description))
-                                val groups = cameraDirections.chunked(2)
-                                groups.forEachIndexed { row, directions ->
-                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        directions.forEachIndexed { col, direction ->
-                                            Box(Modifier.weight(1f)) { NetworkInput("surround_${row * 2 + col}", direction) }
+            BoxWithConstraints(Modifier.padding(insets).fillMaxSize()) {
+                val wide = maxWidth >= 720.dp
+                val surroundColumns = if (maxWidth >= 520.dp) 2 else 1
+                Row(Modifier.fillMaxSize()) {
+                    if (wide) RainyNavigation(page, { page = it }, true)
+                    Column(Modifier.weight(1f).fillMaxHeight()) {
+                        if (!wide) RainyNavigation(page, { page = it }, false)
+                        key(page) {
+                            Column(
+                                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                when (Screen.valueOf(page)) {
+                                    Screen.Home -> {
+                                        RealityDashboard(
+                                            openCamera = { page = Screen.Camera.name },
+                                            openReality = { page = Screen.Reality.name }
+                                        )
+                                        ElevatedCard(Modifier.fillMaxWidth()) {
+                                            Box(Modifier.padding(16.dp)) { GpsStatus() }
                                         }
                                     }
-                                }
-                            }
-                            Screen.Compatibility -> Compatibility()
-                            Screen.Settings -> {
-                                Heading(R.string.settings)
-                                Text(stringResource(R.string.language))
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    listOf("mn" to "Монгол", "en" to "English").forEach { (tag, title) ->
-                                        val selected = prefs.getString("language", "mn") == tag
-                                        FilterChip(selected = selected, onClick = {
-                                            prefs.edit().putString("language", tag).apply()
-                                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
-                                        }, label = { Text(title) })
+                                    Screen.Camera -> {
+                                        Heading(R.string.camera)
+                                        var network by rememberSaveable { mutableStateOf(false) }
+                                        var external by rememberSaveable { mutableStateOf(false) }
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            FilterChip(!network, { network = false }, { Text(stringResource(R.string.device)) })
+                                            FilterChip(network, { network = true }, { Text("RTSP") })
+                                        }
+                                        if (network) NetworkInput("single", R.string.network)
+                                        else {
+                                            Toggle(R.string.external_camera, external) { external = it }
+                                            if (external) Text(stringResource(R.string.external_help))
+                                            else Toggle(R.string.selfie, front) {
+                                                front = it
+                                                prefs.edit().putBoolean("front", it).apply()
+                                            }
+                                            DeviceCamera(front, false, 200, external = external)
+                                        }
+                                    }
+                                    Screen.Reality -> {
+                                        Heading(R.string.reality)
+                                        val calibration = remember { readRoadCalibration(context) }
+                                        var road by rememberSaveable { mutableStateOf(false) }
+                                        val projectionAvailable = calibration != null && !front
+                                        if (projectionAvailable) Toggle(R.string.road_view, road) { road = it }
+                                        else OutlinedButton(onClick = { page = Screen.Settings.name }) {
+                                            Text(stringResource(R.string.calibration))
+                                        }
+                                        Text(stringResource(if (road && projectionAvailable) R.string.road_estimate else R.string.ai_description))
+                                        DeviceCamera(front, true, if (fast) 130 else 300,
+                                            roadCalibration = calibration.takeIf { road && projectionAvailable })
+                                    }
+                                    Screen.Surround -> {
+                                        Heading(R.string.surround)
+                                        Text(stringResource(R.string.surround_description))
+                                        val columns = surroundColumns
+                                        val groups = cameraDirections.chunked(columns)
+                                        groups.forEachIndexed { row, directions ->
+                                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                                directions.forEachIndexed { col, direction ->
+                                                    Box(Modifier.weight(1f)) { NetworkInput("surround_${row * columns + col}", direction) }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Screen.Compatibility -> Compatibility()
+                                    Screen.Settings -> {
+                                        Heading(R.string.settings)
+                                        Text(stringResource(R.string.language))
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            listOf("mn" to "Монгол", "en" to "English").forEach { (tag, title) ->
+                                                val selected = prefs.getString("language", "mn") == tag
+                                                FilterChip(selected = selected, onClick = {
+                                                    prefs.edit().putString("language", tag).apply()
+                                                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+                                                }, label = { Text(title) })
+                                            }
+                                        }
+                                        Toggle(R.string.selfie, front) {
+                                            front = it
+                                            prefs.edit().putBoolean("front", it).apply()
+                                        }
+                                        Toggle(R.string.fast, fast) {
+                                            fast = it
+                                            prefs.edit().putBoolean("fast", it).apply()
+                                        }
+                                        RoadCalibrationSettings()
+                                        Text(stringResource(R.string.privacy))
                                     }
                                 }
-                                Toggle(R.string.selfie, front) {
-                                    front = it
-                                    prefs.edit().putBoolean("front", it).apply()
-                                }
-                                Toggle(R.string.fast, fast) {
-                                    fast = it
-                                    prefs.edit().putBoolean("fast", it).apply()
-                                }
-                                RoadCalibrationSettings()
-                                Text(stringResource(R.string.privacy))
                             }
                         }
                     }

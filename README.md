@@ -7,13 +7,17 @@ RAINY STUDIO · Android 7.0+ · ARM64 эсвэл ARMv7 · `studio.rainy.realityv
 | Хэсэг | Хэрэгжилт | Бодит төхөөрөмжийн шалгалт |
 | --- | --- | --- |
 | Утасны урд ба арын камер | CameraX, эрхийн хүсэлт, lifecycle, алдааны дараах дахин оролдлого | Хийгдээгүй |
-| RTSP | Media3, TCP, тусдаа дүрс, дахин холбох товч | Хийгдээгүй |
+| RTSP | Media3, TCP, тусдаа дүрс, тасарсны дараах 3 автомат оролдлого болон гараар дахин холбох товч | Хийгдээгүй |
 | USB OTG | USB видео төхөөрөмжийг тоолно, Android camera HAL-д ил болсон гадаад камерыг CameraX-ээр нээнэ | UVC төхөөрөмжтэй шууд USB холболт ороогүй |
 | Үйлдвэрийн камер | Android-д ил болсон гадаад камерын оролт, автомашины мэдээлэл оруулах хэсэг, баталгаажаагүй төлөв | OEM адаптер, баталгаажсан бүртгэл байхгүй |
 | AI | CPU дээр EfficientDet-Lite0 ашиглаж бодит кадрын 2D хүрээ, ангилал, итгэлцүүр гаргана | Төхөөрөмж дээр ажиллуулж баталгаажуулаагүй |
 | 3D | Арын камерын тохируулгаар хавтгай газарт проекцлон 3D тэмдэг зурна | Бодит төхөөрөмж, хэмжилтийн нарийвчлал баталгаажаагүй |
 | 360° | Дөрвөн RTSP холболтыг тус тусад нь харуулна | Синхрончлол, калибраци, fisheye засвар, дүрс нэгтгэл хийгдээгүй |
 | GPS ба хурд | Хэрэглэгчийн зөвшөөрлөөр GPS хурдыг Нүүр хэсэгт харуулна | Хийгдээгүй |
+
+## Интерфэйс
+
+Утасны босоо дэлгэц дээр навигаци дээд хэсэгт байрлана. Өргөн дэлгэц дээр зүүн талын цэс байнга харагдана. Дөрвөн камерын цонх нарийн дэлгэцэд нэг багана, өргөн дэлгэцэд хоёр баганатай. RAINY тэмдэг нь нүүр болон Android аппын дүрсэнд харагдана.
 
 ## Суулгах
 
@@ -49,10 +53,10 @@ AI нь төхөөрөмж дээр боловсруулна. Видео хад�
 JDK 17, Android SDK 35, Build Tools 35.0.0 шаардлагатай. Камерын навигацын UI тестийг төхөөрөмж эсвэл ARM эмулятор холбосны дараа `./gradlew :app:connectedDebugAndroidTest` ажиллуулж шалгана.
 
 ```bash
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
+./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease :app:bundleRelease
 ```
 
-Signed release гаргахдаа `RAINY_STORE_FILE`, `RAINY_STORE_PASSWORD`, `RAINY_KEY_ALIAS`, `RAINY_KEY_PASSWORD` орчны хувьсагчийг CI secret эсвэл өөрийн компьютер дээр тохируулж `./gradlew :app:assembleRelease` ажиллуулна. Түлхүүр, нууц үгийг Git-д оруулахгүй. Түгээлтийн хувилбар бүрд versionCode нэмнэ.
+Signed release гаргахдаа `RAINY_STORE_FILE`, `RAINY_STORE_PASSWORD`, `RAINY_KEY_ALIAS`, `RAINY_KEY_PASSWORD` орчны хувьсагчийг CI secret эсвэл өөрийн компьютер дээр тохируулж `./gradlew :app:assembleRelease` ажиллуулна. Түлхүүр, нууц үгийг Git-д оруулахгүй. Google Play-д түгээх багцыг ижил signing тохиргоогоор `./gradlew :app:bundleRelease` ажиллуулж гаргана. Түгээлтийн хувилбар бүрд versionCode нэмнэ.
 
 Үндсэн файлууд нь `MainActivity.kt` (дэлгэц, навигаци), `CameraViews.kt` (CameraX, RTSP), `Vision.kt` (загвар, хүрээ), `Sources.kt` (RTSP хаяг шалгах). AndroidX ба Media3 нь Apache 2.0 лицензтэй. MediaPipe эх код нь Apache 2.0 лицензтэй. EfficientDet-Lite0 INT8 загварын SHA-256 нь [Apache-2.0 нөхцөлтэй LiteRT Community түгээлт](https://huggingface.co/litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite0/tree/main)-ийн файлтай таарсан. Apache-2.0 эхийг `third-party/Apache-2.0.txt`-д хавсаргасан. Аппын өөрийн түгээлтийн лицензийг эзэмшигч тогтооно.
 

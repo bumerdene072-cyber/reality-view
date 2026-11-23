@@ -23,15 +23,16 @@ jobs:
       - name: Install Android SDK components
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Test, lint and assemble
-        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
+        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:bundleRelease
       - name: Prepare artifacts
         run: |
           mkdir -p dist
           cp app/build/outputs/apk/debug/app-debug.apk dist/rainy-debug.apk
           cp app/build/outputs/apk/release/app-release-unsigned.apk dist/rainy-release-unsigned.apk
+          cp app/build/outputs/bundle/release/app-release.aab dist/rainy-release-unsigned.aab
           printf 'Commit %s\nRef %s\n' "$GITHUB_SHA" "$GITHUB_REF" > dist/build.txt
           cd dist
-          sha256sum ./*.apk > SHA256SUMS
+          sha256sum ./*.apk ./*.aab > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
           name: rainy-android
