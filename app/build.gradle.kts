@@ -49,6 +49,7 @@ android {
     defaultConfig {
         applicationId = "studio.rainy.realityview"
         minSdk = 24
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = 1
