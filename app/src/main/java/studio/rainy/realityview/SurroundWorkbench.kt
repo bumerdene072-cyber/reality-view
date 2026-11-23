@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun SurroundWorkbench(directions: List<Int>, columns: Int) {
     val frames = remember { mutableStateMapOf<Int, Bitmap>() }
+    val sources = remember { mutableMapOf<Int, String>() }
     val calibration = remember { mutableStateMapOf<Int, List<Offset>>() }
     var selected by remember { mutableIntStateOf(-1) }
     var corners by remember { mutableStateOf(emptyList<Offset>()) }
@@ -43,7 +44,16 @@ internal fun SurroundWorkbench(directions: List<Int>, columns: Int) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             group.forEach { index ->
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NetworkInput("surround_$index", directions[index]) { frame ->
+                    NetworkInput("surround_$index", directions[index], onAddressChanged = { address ->
+                        if (sources.put(index, address) != address) {
+                            calibration.remove(index)
+                            frames.remove(index)
+                            if (selected == index) {
+                                selected = -1
+                                corners = emptyList()
+                            }
+                        }
+                    }) { frame ->
                         if (frame == null) frames.remove(index) else frames[index] = frame
                     }
                     OutlinedButton(enabled = frames[index] != null, onClick = {

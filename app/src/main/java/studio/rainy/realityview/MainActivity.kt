@@ -169,6 +169,7 @@ internal fun Toggle(label: Int, checked: Boolean, change: (Boolean) -> Unit) {
 internal fun NetworkInput(
     key: String,
     title: Int,
+    onAddressChanged: (String) -> Unit = {},
     onFrame: ((android.graphics.Bitmap?) -> Unit)? = null
 ) {
     var input by remember(key) { mutableStateOf("") }
@@ -184,8 +185,11 @@ internal fun NetworkInput(
                 isError = invalid, modifier = Modifier.fillMaxWidth())
             if (invalid) Text(stringResource(R.string.invalid_address), color = MaterialTheme.colorScheme.error)
             Button(onClick = {
-                if (validRtspAddress(input)) connectedAddress = input.trim()
-                else invalid = true
+                val candidate = input.trim()
+                if (validRtspAddress(candidate)) {
+                    onAddressChanged(candidate)
+                    connectedAddress = candidate
+                } else invalid = true
             }) { Text(stringResource(R.string.connect)) }
         } else {
             NetworkCamera(address, Modifier.fillMaxWidth(), onFrame)

@@ -45,6 +45,7 @@ import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 @Composable
 @OptIn(androidx.camera.core.ExperimentalLensFacing::class, androidx.camera.camera2.interop.ExperimentalCamera2Interop::class)
@@ -227,6 +228,7 @@ fun NetworkCamera(
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val capture = onFrame != null
+    val lastVideoFrame = remember(address) { AtomicLong(0L) }
     val publish by rememberUpdatedState(onFrame)
     val view = remember(context, capture) {
         if (capture) android.view.LayoutInflater.from(context)
@@ -249,6 +251,7 @@ fun NetworkCamera(
         fun stop() {
             player?.release()
             player = null
+            lastVideoFrame.set(0L)
         }
         val lifecycle = LifecycleEventObserver { _, event ->
             when (event) {
@@ -257,8 +260,13 @@ fun NetworkCamera(
                     status = R.string.connecting
                     player = ExoPlayer.Builder(context).build().apply {
                         volume = 0f
+                        if (capture) setVideoFrameMetadataListener { _, _, _, _ ->
+                            lastVideoFrame.set(SystemClock.elapsedRealtime())
+                        }
+                        var firstFrameRendered = false
                         addListener(object : Player.Listener {
                             override fun onRenderedFirstFrame() {
+                                firstFrameRendered = true
                                 status = R.string.connected
                                 remaining = 3
                             }
@@ -268,7 +276,7 @@ fun NetworkCamera(
                                 if (playbackState == Player.STATE_ENDED) status = R.string.network_error
                             }
                             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                                if (isPlaying && status == R.string.connecting) status = R.string.connected
+                                if (isPlaying && firstFrameRendered && status == R.string.connecting) status = R.string.connected
                             }
                         })
                         val source = RtspMediaSource.Factory().setForceUseRtpTcp(true)
@@ -296,10 +304,15 @@ fun NetworkCamera(
             try {
                 while (foreground && status == R.string.connected) {
                     val texture = view.videoSurfaceView as? android.view.TextureView
-                    if (texture != null && texture.isAvailable && texture.width > 0 && texture.height > 0) {
+                    val frameTime = lastVideoFrame.get()
+                    if (frameTime == 0L || SystemClock.elapsedRealtime() - frameTime > 1_500L) {
+                        publish?.invoke(null)
+                    } else if (texture != null && texture.isAvailable && texture.width > 0 && texture.height > 0) {
                         val width = 320
                         val height = (width.toFloat() * texture.height / texture.width).toInt().coerceIn(1, 640)
-                        runCatching { texture.getBitmap(width, height) }.getOrNull()?.let { publish?.invoke(it) }
+                        publish?.invoke(runCatching { texture.getBitmap(width, height) }.getOrNull())
+                    } else {
+                        publish?.invoke(null)
                     }
                     delay(250)
                 }
