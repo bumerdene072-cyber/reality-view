@@ -58,7 +58,16 @@ private fun RainyApp() {
     var front by rememberSaveable { mutableStateOf(prefs.getBoolean("front", false)) }
     var fast by rememberSaveable { mutableStateOf(prefs.getBoolean("fast", false)) }
 
-    MaterialTheme(colorScheme = colors) {
+    var autoAmbient by rememberSaveable { mutableStateOf(prefs.getBoolean("auto_ambient", false)) }
+    val ambient = rememberAmbientLight(autoAmbient)
+    val displayColors = if (ambient == AmbientLight.Dim) colors.copy(
+        primary = Color(0xffffca91),
+        onPrimary = Color(0xff251407),
+        surface = Color(0xff15151b),
+        background = Color(0xff090a0e)
+    ) else colors
+
+    MaterialTheme(colorScheme = displayColors) {
         Scaffold { insets ->
             BoxWithConstraints(Modifier.padding(insets).fillMaxSize()) {
                 val wide = maxWidth >= 720.dp
@@ -120,6 +129,19 @@ private fun RainyApp() {
                                     Screen.Compatibility -> Compatibility()
                                     Screen.Settings -> {
                                         Heading(R.string.settings)
+                                        Toggle(R.string.auto_ambient, autoAmbient) {
+                                            autoAmbient = it
+                                            prefs.edit().putBoolean("auto_ambient", it).apply()
+                                        }
+                                        if (autoAmbient) {
+                                            val status = when (ambient) {
+                                                AmbientLight.Unavailable -> R.string.ambient_unavailable
+                                                AmbientLight.Waiting -> R.string.ambient_waiting
+                                                AmbientLight.Dim -> R.string.ambient_dim
+                                                AmbientLight.Bright -> R.string.ambient_bright
+                                            }
+                                            Text(stringResource(status))
+                                        }
                                         Text(stringResource(R.string.language))
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             listOf("mn" to "Монгол", "en" to "English").forEach { (tag, title) ->

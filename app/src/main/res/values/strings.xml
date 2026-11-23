@@ -96,4 +96,9 @@
     <string name="uvc_empty">USB Host портод UVC камер холбоно уу.</string>
     <string name="uvc_arm64">Шууд USB UVC дүрс ARM64 горимд ажиллана.</string>
     <string name="select_camera_id">Камерын оролт %1$s</string>
+    <string name="auto_ambient">Гэрэлд тааруулж өнгө солих</string>
+    <string name="ambient_unavailable">Энэ төхөөрөмжид гэрлийн мэдрэгч ашиглах боломжгүй.</string>
+    <string name="ambient_waiting">Гэрлийн хэмжилт хүлээж байна…</string>
+    <string name="ambient_dim">Бүдэг орчны өнгө идэвхтэй</string>
+    <string name="ambient_bright">Ердийн өнгө идэвхтэй</string>
 </resources>

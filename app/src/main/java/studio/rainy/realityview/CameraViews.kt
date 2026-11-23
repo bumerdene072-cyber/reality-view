@@ -180,6 +180,7 @@ fun DeviceCamera(
 
 @Composable
 private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
+    val detectionColor = MaterialTheme.colorScheme.primary
     val labelPaint = remember {
         android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
             color = android.graphics.Color.WHITE
@@ -202,7 +203,7 @@ private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
             }
             frame.detections.forEach { detection ->
                 val box = detection.box
-                drawRect(Color(0xff57dbf3),
+                drawRect(detectionColor,
                     Offset(x + box.left * width, y + box.top * height),
                     Size((box.right - box.left) * width, (box.bottom - box.top) * height),
                     style = Stroke(2.dp.toPx()))

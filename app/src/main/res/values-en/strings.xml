@@ -96,4 +96,9 @@
     <string name="uvc_empty">Connect a UVC camera to a USB host port.</string>
     <string name="uvc_arm64">Direct USB UVC preview requires ARM64.</string>
     <string name="select_camera_id">Camera input %1$s</string>
+    <string name="auto_ambient">Adapt colors to ambient light</string>
+    <string name="ambient_unavailable">An ambient light sensor is unavailable.</string>
+    <string name="ambient_waiting">Waiting for an ambient light reading…</string>
+    <string name="ambient_dim">Low-light colors active</string>
+    <string name="ambient_bright">Normal colors active</string>
 </resources>
