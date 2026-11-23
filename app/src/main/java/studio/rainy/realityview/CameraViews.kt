@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -173,6 +174,13 @@ fun DeviceCamera(
 
 @Composable
 private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
+    val labelPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setShadowLayer(3f, 0f, 1f, android.graphics.Color.BLACK)
+        }
+    }
     Box(modifier) {
         Canvas(Modifier.matchParentSize()) { drawRect(Color.Black) }
         Image(frame.image.asImageBitmap(), stringResource(R.string.ai_frame), Modifier.matchParentSize(), contentScale = ContentScale.Fit)
@@ -188,6 +196,13 @@ private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
                     Offset(x + box.left * width, y + box.top * height),
                     Size((box.right - box.left) * width, (box.bottom - box.top) * height),
                     style = Stroke(2.dp.toPx()))
+                detection.trackId?.let { id ->
+                    labelPaint.textSize = 12.dp.toPx()
+                    drawContext.canvas.nativeCanvas.drawText(
+                        "#$id", x + box.left * width + 4.dp.toPx(),
+                        y + box.top * height + 15.dp.toPx(), labelPaint
+                    )
+                }
             }
         }
     }

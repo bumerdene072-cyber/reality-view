@@ -1,6 +1,6 @@
 package studio.rainy.realityview
 
-data class Detection(val kind: String, val score: Float, val box: FrameBox)
+data class Detection(val kind: String, val score: Float, val box: FrameBox, val trackId: Long? = null)
 data class FrameBox(val left: Float, val top: Float, val right: Float, val bottom: Float) {
     companion object {
         fun normalize(left: Float, top: Float, right: Float, bottom: Float, width: Int, height: Int): FrameBox? {

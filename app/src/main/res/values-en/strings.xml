@@ -75,4 +75,16 @@
     <string name="external_camera">Android external camera</string>
     <string name="external_help">Opens a USB or factory camera exposed by the Android camera system.</string>
     <string name="dashboard_title">View your surroundings</string>
+    <string name="scan_android_inputs">Scan Android camera inputs</string>
+    <string name="camera_input_front">Front-facing camera</string>
+    <string name="camera_input_back">Rear-facing camera</string>
+    <string name="camera_input_unknown">Unknown type</string>
+    <string name="camera_scan_error">Could not read the camera list.</string>
+    <string name="camera_scan_empty">No app-visible Android camera inputs found.</string>
+    <string name="camera_scan_result">Camera %1$s · %2$s</string>
+    <string name="rtsp_scan">Find RTSP cameras on network</string>
+    <string name="rtsp_scanning">Looking for RTSP cameras…</string>
+    <string name="rtsp_scan_empty">No cameras advertising an RTSP service were found. Enter an address manually.</string>
+    <string name="rtsp_scan_error">Could not resolve the camera address.</string>
+    <string name="rtsp_path_hint">Enter the camera stream path before connecting.</string>
 </resources>

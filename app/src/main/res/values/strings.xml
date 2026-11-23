@@ -75,4 +75,16 @@
     <string name="external_camera">Android-д танигдсан гадаад камер</string>
     <string name="external_help">Android камерын системд нэмэгдсэн USB эсвэл үйлдвэрийн камер байвал нээнэ.</string>
     <string name="dashboard_title">Орчноо харах</string>
+    <string name="scan_android_inputs">Android камерын оролт шалгах</string>
+    <string name="camera_input_front">Дэлгэц талын камер</string>
+    <string name="camera_input_back">Арын камер</string>
+    <string name="camera_input_unknown">Төрөл тодорхойгүй</string>
+    <string name="camera_scan_error">Камерын жагсаалт уншигдсангүй.</string>
+    <string name="camera_scan_empty">Android аппад харагдах камерын оролт олдсонгүй.</string>
+    <string name="camera_scan_result">Камер %1$s · %2$s</string>
+    <string name="rtsp_scan">Сүлжээнээс RTSP камер хайх</string>
+    <string name="rtsp_scanning">RTSP камер хайж байна…</string>
+    <string name="rtsp_scan_empty">Өөрийгөө RTSP үйлчилгээгээр зарладаг камер олдсонгүй. Хаягийг гараар оруулж болно.</string>
+    <string name="rtsp_scan_error">Камерын сүлжээний хаягийг уншиж чадсангүй.</string>
+    <string name="rtsp_path_hint">Холбохын өмнө камерын stream замыг оруулна уу.</string>
 </resources>

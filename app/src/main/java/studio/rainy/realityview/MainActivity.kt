@@ -2,6 +2,8 @@ package studio.rainy.realityview
 
 import android.content.Context
 import android.content.Intent
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbManager
 import android.net.Uri
@@ -182,6 +184,7 @@ private fun NetworkInput(key: String, title: Int) {
         Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
         val address = connectedAddress
         if (address == null) {
+            if (key == "single") RtspDiscovery { input = it; invalid = false }
             OutlinedTextField(input, onValueChange = { input = it; invalid = false },
                 label = { Text(stringResource(R.string.rtsp_address)) }, singleLine = true,
                 isError = invalid, modifier = Modifier.fillMaxWidth())
@@ -202,6 +205,8 @@ private fun Compatibility() {
     val context = LocalContext.current
     val usb = context.getSystemService(UsbManager::class.java)
     var count by remember { mutableIntStateOf(-1) }
+    var inventory by remember { mutableStateOf<List<Pair<String, Int>>?>(null) }
+    var scanFailed by remember { mutableStateOf(false) }
     var make by rememberSaveable { mutableStateOf("") }
     var model by rememberSaveable { mutableStateOf("") }
     var year by rememberSaveable { mutableStateOf("") }
@@ -220,6 +225,29 @@ private fun Compatibility() {
         } ?: 0
     }) { Text(stringResource(R.string.scan_usb)) }
     if (count >= 0) Text(stringResource(R.string.usb_results, count))
+    OutlinedButton(onClick = {
+        val manager = context.getSystemService(CameraManager::class.java)
+        val result = runCatching {
+            requireNotNull(manager).cameraIdList.map { id ->
+                val facing = manager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING)
+                id to when (facing) {
+                    CameraCharacteristics.LENS_FACING_FRONT -> R.string.camera_input_front
+                    CameraCharacteristics.LENS_FACING_BACK -> R.string.camera_input_back
+                    CameraCharacteristics.LENS_FACING_EXTERNAL -> R.string.external_camera
+                    else -> R.string.camera_input_unknown
+                }
+            }
+        }
+        inventory = result.getOrNull()
+        scanFailed = result.isFailure
+    }) { Text(stringResource(R.string.scan_android_inputs)) }
+    if (scanFailed) Text(stringResource(R.string.camera_scan_error))
+    inventory?.let { entries ->
+        if (entries.isEmpty()) Text(stringResource(R.string.camera_scan_empty))
+        entries.forEach { (id, type) ->
+            Text(stringResource(R.string.camera_scan_result, id, stringResource(type)))
+        }
+    }
     var reportFailed by remember { mutableStateOf(false) }
     OutlinedButton(onClick = {
         reportFailed = runCatching {

@@ -11,6 +11,7 @@ import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 data class VisionFrame(val image: Bitmap, val detections: List<Detection>, val timestampNanos: Long)
 
 class Vision(context: Context) : AutoCloseable {
+    private val tracker = DetectionTracker()
     private val detector = ObjectDetector.createFromOptions(
         context,
         ObjectDetector.ObjectDetectorOptions.builder()
@@ -41,7 +42,8 @@ class Vision(context: Context) : AutoCloseable {
         } finally {
             input.close()
         }
-        return VisionFrame(image, detections, frame.imageInfo.timestamp)
+        val timestamp = frame.imageInfo.timestamp
+        return VisionFrame(image, tracker.update(detections, timestamp), timestamp)
     }
 
     override fun close() = detector.close()
