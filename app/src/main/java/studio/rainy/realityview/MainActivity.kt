@@ -169,10 +169,11 @@ internal fun Toggle(label: Int, checked: Boolean, change: (Boolean) -> Unit) {
 internal fun NetworkInput(
     key: String,
     title: Int,
+    initialAddress: String = "",
     onAddressChanged: (String) -> Unit = {},
     onFrame: ((android.graphics.Bitmap?) -> Unit)? = null
 ) {
-    var input by remember(key) { mutableStateOf("") }
+    var input by remember(key) { mutableStateOf(initialAddress) }
     var connectedAddress by remember(key) { mutableStateOf<String?>(null) }
     var invalid by remember(key) { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {

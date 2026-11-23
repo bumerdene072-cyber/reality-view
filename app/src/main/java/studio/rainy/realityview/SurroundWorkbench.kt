@@ -20,10 +20,15 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun SurroundWorkbench(directions: List<Int>, columns: Int) {
+    val context = LocalContext.current
+    val profiles = remember(context) {
+        context.getSharedPreferences("surround_calibration", android.content.Context.MODE_PRIVATE)
+    }
     val frames = remember { mutableStateMapOf<Int, Bitmap>() }
     val sources = remember { mutableMapOf<Int, String>() }
     val calibration = remember { mutableStateMapOf<Int, List<Offset>>() }
@@ -44,16 +49,28 @@ internal fun SurroundWorkbench(directions: List<Int>, columns: Int) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             group.forEach { index ->
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NetworkInput("surround_$index", directions[index], onAddressChanged = { address ->
-                        if (sources.put(index, address) != address) {
-                            calibration.remove(index)
-                            frames.remove(index)
-                            if (selected == index) {
-                                selected = -1
-                                corners = emptyList()
+                    NetworkInput(
+                        "surround_$index", directions[index],
+                        initialAddress = profiles.getString("address_$index", "").orEmpty(),
+                        onAddressChanged = { address ->
+                            if (sources.put(index, address) != address) {
+                                val savedAddress = profiles.getString("address_$index", null)
+                                val savedPoints = if (savedAddress == address) {
+                                    parseCalibration(profiles.getString("points_$index", null))
+                                } else {
+                                    profiles.edit().putString("address_$index", address).remove("points_$index").apply()
+                                    null
+                                }
+                                if (savedPoints == null) calibration.remove(index)
+                                else calibration[index] = savedPoints
+                                frames.remove(index)
+                                if (selected == index) {
+                                    selected = -1
+                                    corners = emptyList()
+                                }
                             }
                         }
-                    }) { frame ->
+                    ) { frame ->
                         if (frame == null) frames.remove(index) else frames[index] = frame
                     }
                     OutlinedButton(enabled = frames[index] != null, onClick = {
@@ -92,14 +109,28 @@ internal fun SurroundWorkbench(directions: List<Int>, columns: Int) {
             Button(enabled = corners.size == 4, onClick = {
                 if (isClockwiseQuad(corners)) {
                     calibration[index] = corners
+                    profiles.edit().putString("points_$index", corners.joinToString(",") { "${it.x},${it.y}" }).apply()
                     selected = -1
                 } else invalid = true
             }) { Text(stringResource(R.string.save)) }
-            OutlinedButton(onClick = { corners = emptyList(); invalid = false }) {
+            OutlinedButton(onClick = {
+                calibration.remove(index)
+                profiles.edit().remove("points_$index").apply()
+                corners = emptyList()
+                invalid = false
+            }) {
                 Text(stringResource(R.string.clear))
             }
         }
     }
+}
+
+internal fun parseCalibration(encoded: String?): List<Offset>? {
+    val fields = encoded?.split(',') ?: return null
+    if (fields.size != 8) return null
+    val coordinates = fields.map { it.toFloatOrNull()?.takeIf { value -> value in 0f..1f } ?: return null }
+    val points = coordinates.chunked(2).map { (x, y) -> Offset(x, y) }
+    return points.takeIf(::isClockwiseQuad)
 }
 
 private fun isClockwiseQuad(points: List<Offset>): Boolean {
