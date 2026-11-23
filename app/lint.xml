@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Compose is pinned to the Android SDK 35 / AGP 8.7 build baseline. -->
+    <issue id="GradleDependency">
+        <ignore regexp="A newer version of androidx.compose:compose-bom than 2024\.12\.01 is available" />
+    </issue>
+    <!-- The offline inference engine ships only ARM native libraries. -->
+    <issue id="ChromeOsAbiSupport">
+        <ignore path="build.gradle.kts" />
+    </issue>
+</lint>

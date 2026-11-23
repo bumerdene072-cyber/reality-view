@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">RAINY Reality View</string>
-    <string name="studio">RAINY STUDIO</string>
     <string name="home">Home</string>
     <string name="camera">Camera</string>
     <string name="reality">Reality view</string>
@@ -22,7 +21,7 @@
     <string name="ai_frame">Camera frame analyzed by AI</string>
     <string name="ai_error">The AI model could not load or analyze the frame.</string>
     <string name="detections">Objects detected %1$d</string>
-    <string name="detection_summary">%1$s · %2$d detected · top confidence %3$d%%</string>
+    <string name="detection_summary">%1$s · Detected: %2$d · top confidence %3$d%%</string>
     <string name="person">Person</string>
     <string name="car">Car</string>
     <string name="truck">Truck</string>

@@ -230,7 +230,7 @@ fun NetworkCamera(
     val publish by rememberUpdatedState(onFrame)
     val view = remember(context, capture) {
         if (capture) android.view.LayoutInflater.from(context)
-            .inflate(R.layout.rtsp_capture_view, null) as PlayerView
+            .inflate(R.layout.rtsp_capture_view, android.widget.FrameLayout(context), false) as PlayerView
         else PlayerView(context).apply { useController = false }
     }
     var player by remember(address) { mutableStateOf<ExoPlayer?>(null) }
