@@ -52,8 +52,8 @@ android {
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     compileOptions {
@@ -89,6 +89,7 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.4.1")
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
+    implementation("io.github.mikimn:droiduvc-compose:0.2.1")
     implementation("androidx.media3:media3-common:1.5.1")
     implementation("androidx.media3:media3-exoplayer:1.5.1")
     implementation("androidx.media3:media3-exoplayer-rtsp:1.5.1")

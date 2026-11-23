@@ -47,13 +47,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Composable
-@OptIn(androidx.camera.core.ExperimentalLensFacing::class)
+@OptIn(androidx.camera.core.ExperimentalLensFacing::class, androidx.camera.camera2.interop.ExperimentalCamera2Interop::class)
 fun DeviceCamera(
     front: Boolean,
     inference: Boolean,
     intervalMs: Long,
     roadCalibration: RoadCalibration? = null,
-    external: Boolean = false
+    external: Boolean = false,
+    cameraId: String? = null
 ) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
@@ -67,12 +68,12 @@ fun DeviceCamera(
         return
     }
     var attempt by remember { mutableIntStateOf(0) }
-    var status by remember(front, inference, attempt, external) { mutableIntStateOf(R.string.connecting) }
-    var aiError by remember(front, inference, attempt, external) { mutableStateOf(false) }
-    var frame by remember(front, inference, attempt, external) { mutableStateOf<VisionFrame?>(null) }
+    var status by remember(front, inference, attempt, external, cameraId) { mutableIntStateOf(R.string.connecting) }
+    var aiError by remember(front, inference, attempt, external, cameraId) { mutableStateOf(false) }
+    var frame by remember(front, inference, attempt, external, cameraId) { mutableStateOf<VisionFrame?>(null) }
     val previewView = remember { PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER; implementationMode = PreviewView.ImplementationMode.COMPATIBLE } }
 
-    DisposableEffect(front, inference, intervalMs, attempt, owner, external) {
+    DisposableEffect(front, inference, intervalMs, attempt, owner, external, cameraId) {
         val active = AtomicBoolean(true)
         val main = ContextCompat.getMainExecutor(context)
         val worker = Executors.newSingleThreadExecutor()
@@ -115,6 +116,9 @@ fun DeviceCamera(
             if (active.get()) {
                 try {
                     val selector = when {
+                        cameraId != null -> CameraSelector.Builder().addCameraFilter { cameras ->
+                            cameras.filter { androidx.camera.camera2.interop.Camera2CameraInfo.from(it).cameraId == cameraId }
+                        }.build()
                         external -> CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_EXTERNAL).build()
                         front -> CameraSelector.DEFAULT_FRONT_CAMERA
                         else -> CameraSelector.DEFAULT_BACK_CAMERA
@@ -154,6 +158,7 @@ fun DeviceCamera(
         }
     }
     if (inference && current != null) {
+        if (roadCalibration == null && current.lanes.isNotEmpty()) Text(stringResource(R.string.lane_estimate))
         Text(stringResource(R.string.detections, current.detections.size))
         current.detections.groupBy { it.kind }.forEach { (kind, items) ->
             val label = when (kind) {
@@ -190,6 +195,10 @@ private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
             val height = frame.image.height * scale
             val x = (size.width - width) / 2
             val y = (size.height - height) / 2
+            frame.lanes.forEach { lane ->
+                drawLine(Color(0xffffca71), Offset(x + lane.farX * width, y + lane.farY * height),
+                    Offset(x + lane.nearX * width, y + lane.nearY * height), 2.dp.toPx())
+            }
             frame.detections.forEach { detection ->
                 val box = detection.box
                 drawRect(Color(0xff57dbf3),
@@ -210,9 +219,20 @@ private fun DetectionFrame(frame: VisionFrame, modifier: Modifier) {
 
 @OptIn(UnstableApi::class)
 @Composable
-fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
+fun NetworkCamera(
+    address: String,
+    modifier: Modifier = Modifier,
+    onFrame: ((android.graphics.Bitmap?) -> Unit)? = null
+) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
+    val capture = onFrame != null
+    val publish by rememberUpdatedState(onFrame)
+    val view = remember(context, capture) {
+        if (capture) android.view.LayoutInflater.from(context)
+            .inflate(R.layout.rtsp_capture_view, null) as PlayerView
+        else PlayerView(context).apply { useController = false }
+    }
     var player by remember(address) { mutableStateOf<ExoPlayer?>(null) }
     var attempt by remember(address) { mutableIntStateOf(0) }
     var status by remember(address, attempt) { mutableIntStateOf(R.string.connecting) }
@@ -271,12 +291,29 @@ fun NetworkCamera(address: String, modifier: Modifier = Modifier) {
             stop()
         }
     }
+    if (capture) {
+        LaunchedEffect(status, foreground, player) {
+            try {
+                while (foreground && status == R.string.connected) {
+                    val texture = view.videoSurfaceView as? android.view.TextureView
+                    if (texture != null && texture.isAvailable && texture.width > 0 && texture.height > 0) {
+                        val width = 320
+                        val height = (width.toFloat() * texture.height / texture.width).toInt().coerceIn(1, 640)
+                        runCatching { texture.getBitmap(width, height) }.getOrNull()?.let { publish?.invoke(it) }
+                    }
+                    delay(250)
+                }
+            } finally {
+                publish?.invoke(null)
+            }
+        }
+    }
     Column(modifier) {
         Text(stringResource(status))
         if (status == R.string.network_error) {
             OutlinedButton(onClick = { remaining = 3; attempt++ }) { Text(stringResource(R.string.retry)) }
         }
-        AndroidView(factory = { PlayerView(it).apply { useController = false } },
+        AndroidView(factory = { view },
             update = { it.player = player },
             onReset = null, onRelease = { it.player = null },
             modifier = Modifier.fillMaxWidth().height(185.dp))

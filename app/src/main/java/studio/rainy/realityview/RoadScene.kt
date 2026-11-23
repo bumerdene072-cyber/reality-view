@@ -73,7 +73,7 @@ private fun CalibrationField(value: String, change: (String) -> Unit, label: Int
 }
 
 @Composable
-fun RoadScene(frame: VisionFrame, calibration: RoadCalibration, modifier: Modifier) {
+internal fun RoadScene(frame: VisionFrame, calibration: RoadCalibration, modifier: Modifier) {
     val traffic = frame.detections.mapNotNull { detection ->
         if (detection.kind == "traffic light" || detection.kind == "stop sign") null
         else calibration.project(detection.box)?.let { detection.kind to it }

@@ -31,7 +31,7 @@
     <string name="bicycle">Унадаг дугуй</string>
     <string name="traffic_light">Замын гэрэл</string>
     <string name="stop_sign">Зогсох тэмдэг</string>
-    <string name="surround_description">Дөрвөн RTSP камерын тусдаа дүрс. Дүрс нэгтгэх болон дээрээс харах горим одоогоор боломжгүй.</string>
+    <string name="surround_description">Дөрвөн RTSP камерын дүрсийг газрын цэгээр тохируулж нэгтгэнэ.</string>
     <string name="language">Хэл</string>
     <string name="fast">AI дүрс боловсруулах давтамжийг нэмэх</string>
     <string name="privacy">AI боловсруулалт төхөөрөмж дээр хийгдэнэ. Апп видео хадгалахгүй. RTSP сонгоход оруулсан камер руу сүлжээгээр холбогдоно.</string>
@@ -87,4 +87,14 @@
     <string name="rtsp_scan_empty">Өөрийгөө RTSP үйлчилгээгээр зарладаг камер олдсонгүй. Хаягийг гараар оруулж болно.</string>
     <string name="rtsp_scan_error">Камерын сүлжээний хаягийг уншиж чадсангүй.</string>
     <string name="rtsp_path_hint">Холбохын өмнө камерын stream замыг оруулна уу.</string>
+    <string name="lane_estimate">Шар шугам нь тод зурвасаас тооцсон эгнээний тэмдэглэгээ.</string>
+    <string name="surround_feeds">Камер тус бүр</string>
+    <string name="surround_stitch">Дээрээс нэгтгэх</string>
+    <string name="surround_calibrate">4 цэг тохируулах</string>
+    <string name="surround_need_calibration">Дүрс %1$d/4 · Тохируулга %2$d/4. Дөрвөн камер шаардлагатай.</string>
+    <string name="surround_tap">Газрын 4 цэгийг хол-зүүн, хол-баруун, ойр-баруун, ойр-зүүн дарааллаар дарна (%1$d/4).</string>
+    <string name="surround_invalid">Цэгүүдийг заасан дарааллаар дахин оруулна уу.</string>
+    <string name="uvc_empty">USB Host портод UVC камер холбоно уу.</string>
+    <string name="uvc_arm64">Шууд USB UVC дүрс ARM64 горимд ажиллана.</string>
+    <string name="select_camera_id">Камерын оролт %1$s</string>
 </resources>

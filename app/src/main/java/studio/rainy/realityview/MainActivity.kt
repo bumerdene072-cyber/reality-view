@@ -84,21 +84,19 @@ private fun RainyApp() {
                                     }
                                     Screen.Camera -> {
                                         Heading(R.string.camera)
-                                        var network by rememberSaveable { mutableStateOf(false) }
-                                        var external by rememberSaveable { mutableStateOf(false) }
-                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            FilterChip(!network, { network = false }, { Text(stringResource(R.string.device)) })
-                                            FilterChip(network, { network = true }, { Text("RTSP") })
+                                        var source by rememberSaveable { mutableIntStateOf(0) }
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            listOf(stringResource(R.string.device), "RTSP", "USB UVC").forEachIndexed { index, label ->
+                                                FilterChip(source == index, { source = index }, { Text(label) })
+                                            }
                                         }
-                                        if (network) NetworkInput("single", R.string.network)
-                                        else {
-                                            Toggle(R.string.external_camera, external) { external = it }
-                                            if (external) Text(stringResource(R.string.external_help))
-                                            else Toggle(R.string.selfie, front) {
+                                        when (source) {
+                                            1 -> NetworkInput("single", R.string.network)
+                                            2 -> UsbCamera()
+                                            else -> CameraInputs(front) {
                                                 front = it
                                                 prefs.edit().putBoolean("front", it).apply()
                                             }
-                                            DeviceCamera(front, false, 200, external = external)
                                         }
                                     }
                                     Screen.Reality -> {
@@ -117,15 +115,7 @@ private fun RainyApp() {
                                     Screen.Surround -> {
                                         Heading(R.string.surround)
                                         Text(stringResource(R.string.surround_description))
-                                        val columns = surroundColumns
-                                        val groups = cameraDirections.chunked(columns)
-                                        groups.forEachIndexed { row, directions ->
-                                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                                directions.forEachIndexed { col, direction ->
-                                                    Box(Modifier.weight(1f)) { NetworkInput("surround_${row * columns + col}", direction) }
-                                                }
-                                            }
-                                        }
+                                        SurroundWorkbench(cameraDirections, surroundColumns)
                                     }
                                     Screen.Compatibility -> Compatibility()
                                     Screen.Settings -> {
@@ -176,7 +166,11 @@ internal fun Toggle(label: Int, checked: Boolean, change: (Boolean) -> Unit) {
 }
 
 @Composable
-private fun NetworkInput(key: String, title: Int) {
+internal fun NetworkInput(
+    key: String,
+    title: Int,
+    onFrame: ((android.graphics.Bitmap?) -> Unit)? = null
+) {
     var input by remember(key) { mutableStateOf("") }
     var connectedAddress by remember(key) { mutableStateOf<String?>(null) }
     var invalid by remember(key) { mutableStateOf(false) }
@@ -194,7 +188,7 @@ private fun NetworkInput(key: String, title: Int) {
                 else invalid = true
             }) { Text(stringResource(R.string.connect)) }
         } else {
-            NetworkCamera(address, Modifier.fillMaxWidth())
+            NetworkCamera(address, Modifier.fillMaxWidth(), onFrame)
             OutlinedButton(onClick = { connectedAddress = null }) { Text(stringResource(R.string.disconnect)) }
         }
     }

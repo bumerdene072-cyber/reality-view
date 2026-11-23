@@ -8,9 +8,9 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 
-data class VisionFrame(val image: Bitmap, val detections: List<Detection>, val timestampNanos: Long)
+internal data class VisionFrame(val image: Bitmap, val detections: List<Detection>, val timestampNanos: Long, val lanes: List<LaneMark>)
 
-class Vision(context: Context) : AutoCloseable {
+internal class Vision(context: Context) : AutoCloseable {
     private val tracker = DetectionTracker()
     private val detector = ObjectDetector.createFromOptions(
         context,
@@ -43,7 +43,17 @@ class Vision(context: Context) : AutoCloseable {
             input.close()
         }
         val timestamp = frame.imageInfo.timestamp
-        return VisionFrame(image, tracker.update(detections, timestamp), timestamp)
+        val sample = Bitmap.createScaledBitmap(image, 128, 72, true)
+        val pixels = IntArray(128 * 72)
+        sample.getPixels(pixels, 0, 128, 0, 0, 128, 72)
+        if (sample !== image) sample.recycle()
+        for (index in pixels.indices) {
+            val rgb = pixels[index]
+            pixels[index] = ((rgb shr 16 and 255) * 77 + (rgb shr 8 and 255) * 150 +
+                (rgb and 255) * 29) shr 8
+        }
+        return VisionFrame(image, tracker.update(detections, timestamp), timestamp,
+            LaneMarks.find(pixels, 128, 72))
     }
 
     override fun close() = detector.close()

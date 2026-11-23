@@ -31,7 +31,7 @@
     <string name="bicycle">Bicycle</string>
     <string name="traffic_light">Traffic light</string>
     <string name="stop_sign">Stop sign</string>
-    <string name="surround_description">Four separate RTSP previews. Stitching and bird’s-eye projection are currently unavailable.</string>
+    <string name="surround_description">Calibrate ground points on four RTSP feeds to display a stitched view.</string>
     <string name="language">Language</string>
     <string name="fast">Increase AI analysis frequency</string>
     <string name="privacy">AI processing stays on this device. The app does not record video. RTSP opens a network connection to the camera you enter.</string>
@@ -87,4 +87,14 @@
     <string name="rtsp_scan_empty">No cameras advertising an RTSP service were found. Enter an address manually.</string>
     <string name="rtsp_scan_error">Could not resolve the camera address.</string>
     <string name="rtsp_path_hint">Enter the camera stream path before connecting.</string>
+    <string name="lane_estimate">Yellow lines estimate lane markings from bright stripes.</string>
+    <string name="surround_feeds">Camera feeds</string>
+    <string name="surround_stitch">Stitched view</string>
+    <string name="surround_calibrate">Calibrate 4 points</string>
+    <string name="surround_need_calibration">Feeds %1$d/4 · Calibrated %2$d/4. Four cameras required.</string>
+    <string name="surround_tap">Tap four ground points: far-left, far-right, near-right, near-left (%1$d/4).</string>
+    <string name="surround_invalid">Re-enter the points in the indicated order.</string>
+    <string name="uvc_empty">Connect a UVC camera to a USB host port.</string>
+    <string name="uvc_arm64">Direct USB UVC preview requires ARM64.</string>
+    <string name="select_camera_id">Camera input %1$s</string>
 </resources>
