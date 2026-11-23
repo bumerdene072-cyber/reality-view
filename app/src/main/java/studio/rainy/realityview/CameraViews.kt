@@ -45,6 +45,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Composable
+@OptIn(androidx.camera.core.ExperimentalLensFacing::class)
 fun DeviceCamera(
     front: Boolean,
     inference: Boolean,
