@@ -51,7 +51,7 @@
     <string name="year">Model year</string>
     <string name="no_vehicle_records">Factory camera compatibility is unverified for this vehicle.</string>
     <string name="scan_usb">Scan for USB video devices</string>
-    <string name="usb_results">USB video devices %1$d. USB video playback is unavailable in this version.</string>
+    <string name="usb_results">USB video devices %1$d. Use Camera to open Android external camera inputs.</string>
     <string name="report">Report an issue on GitHub</string>
     <string name="no_browser">No browser is available to open the link.</string>
     <string name="gps">GPS speed</string>
@@ -59,4 +59,19 @@
     <string name="gps_unavailable">GPS is disabled or unavailable.</string>
     <string name="gps_permission">Allow precise location to show GPS speed.</string>
     <string name="gps_speed">GPS speed %1$.1f km/h</string>
+    <string name="road_view">3D road view</string>
+    <string name="road_estimate">Approximate positions from a flat ground model. Measured distance and detected lanes are unavailable.</string>
+    <string name="calibration">Rear-camera calibration</string>
+    <string name="calibration_help">Enter measured camera height, downward pitch and horizontal and vertical field of view. Recalibrate after moving or rotating the device.</string>
+    <string name="height">Camera height, meters (0.3–5)</string>
+    <string name="pitch">Downward pitch, degrees (−20–45)</string>
+    <string name="hfov">Horizontal field of view, degrees (25–140)</string>
+    <string name="vfov">Vertical field of view, degrees (20–130)</string>
+    <string name="save">Save</string>
+    <string name="clear">Clear</string>
+    <string name="calibration_saved">Camera calibration saved.</string>
+    <string name="calibration_invalid">Enter all four values within the indicated ranges.</string>
+    <string name="calibration_cleared">Camera calibration cleared.</string>
+    <string name="external_camera">Android external camera</string>
+    <string name="external_help">Opens a USB or factory camera exposed by the Android camera system.</string>
 </resources>

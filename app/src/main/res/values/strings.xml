@@ -51,7 +51,7 @@
     <string name="year">Үйлдвэрлэсэн он</string>
     <string name="no_vehicle_records">Сонгосон автомашины үйлдвэрийн камерын нийцлийг баталгаажуулаагүй.</string>
     <string name="scan_usb">USB видео төхөөрөмж шалгах</string>
-    <string name="usb_results">USB видео төхөөрөмж %1$d. Энэ хувилбарт USB дүрс нээх боломжгүй.</string>
+    <string name="usb_results">USB видео төхөөрөмж %1$d. Камер цэснээс Android-д танигдсан гадаад камерыг нээнэ.</string>
     <string name="report">GitHub дээр асуудал мэдээлэх</string>
     <string name="no_browser">Холбоос нээх хөтөч олдсонгүй.</string>
     <string name="gps">GPS хурд</string>
@@ -59,4 +59,19 @@
     <string name="gps_unavailable">GPS унтраалттай эсвэл төхөөрөмжид байхгүй байна.</string>
     <string name="gps_permission">GPS хурд харахын тулд нарийвчилсан байршлын эрх олгоно уу.</string>
     <string name="gps_speed">GPS хурд %1$.1f км/ц</string>
+    <string name="road_view">3D замын дүрслэл</string>
+    <string name="road_estimate">Хавтгай замын таамаглалаар гаргасан ойролцоо байрлал. Бодит зай болон илрүүлсэн эгнээний мэдээлэл байхгүй.</string>
+    <string name="calibration">Арын камерын тохируулга</string>
+    <string name="calibration_help">Камерын өндөр, доош харсан өнцөг, дүрсний хэвтээ ба босоо харах өнцгийг хэмжиж оруулна. Утсаа хөдөлгөх эсвэл эргүүлэх бүрд дахин тохируулна.</string>
+    <string name="height">Камерын өндөр, метр (0.3–5)</string>
+    <string name="pitch">Доош харсан өнцөг, градус (−20–45)</string>
+    <string name="hfov">Хэвтээ харах өнцөг, градус (25–140)</string>
+    <string name="vfov">Босоо харах өнцөг, градус (20–130)</string>
+    <string name="save">Хадгалах</string>
+    <string name="clear">Арилгах</string>
+    <string name="calibration_saved">Камерын тохируулга хадгалагдлаа.</string>
+    <string name="calibration_invalid">Дөрвөн утгыг заасан мужид оруулна уу.</string>
+    <string name="calibration_cleared">Камерын тохируулгыг арилгалаа.</string>
+    <string name="external_camera">Android-д танигдсан гадаад камер</string>
+    <string name="external_help">Android камерын системд нэмэгдсэн USB эсвэл үйлдвэрийн камер байвал нээнэ.</string>
 </resources>

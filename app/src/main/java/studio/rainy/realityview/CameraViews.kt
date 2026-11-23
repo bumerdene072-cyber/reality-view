@@ -45,7 +45,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Composable
-fun DeviceCamera(front: Boolean, inference: Boolean, intervalMs: Long) {
+fun DeviceCamera(
+    front: Boolean,
+    inference: Boolean,
+    intervalMs: Long,
+    roadCalibration: RoadCalibration? = null,
+    external: Boolean = false
+) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     var permission by remember {
@@ -58,12 +64,12 @@ fun DeviceCamera(front: Boolean, inference: Boolean, intervalMs: Long) {
         return
     }
     var attempt by remember { mutableIntStateOf(0) }
-    var status by remember(front, inference, attempt) { mutableIntStateOf(R.string.connecting) }
-    var aiError by remember(front, inference, attempt) { mutableStateOf(false) }
-    var frame by remember(front, inference, attempt) { mutableStateOf<VisionFrame?>(null) }
+    var status by remember(front, inference, attempt, external) { mutableIntStateOf(R.string.connecting) }
+    var aiError by remember(front, inference, attempt, external) { mutableStateOf(false) }
+    var frame by remember(front, inference, attempt, external) { mutableStateOf<VisionFrame?>(null) }
     val previewView = remember { PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER; implementationMode = PreviewView.ImplementationMode.COMPATIBLE } }
 
-    DisposableEffect(front, inference, intervalMs, attempt, owner) {
+    DisposableEffect(front, inference, intervalMs, attempt, owner, external) {
         val active = AtomicBoolean(true)
         val main = ContextCompat.getMainExecutor(context)
         val worker = Executors.newSingleThreadExecutor()
@@ -105,7 +111,11 @@ fun DeviceCamera(front: Boolean, inference: Boolean, intervalMs: Long) {
         future.addListener({
             if (active.get()) {
                 try {
-                    val selector = if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+                    val selector = when {
+                        external -> CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_EXTERNAL).build()
+                        front -> CameraSelector.DEFAULT_FRONT_CAMERA
+                        else -> CameraSelector.DEFAULT_BACK_CAMERA
+                    }
                     val ready = future.get().also { provider = it }
                     require(ready.hasCamera(selector))
                     val camera = if (inference) ready.bindToLifecycle(owner, selector, preview, analysis)
@@ -135,7 +145,10 @@ fun DeviceCamera(front: Boolean, inference: Boolean, intervalMs: Long) {
     // The preview remains attached while analysis frames are shown.
     Box(Modifier.fillMaxWidth().height(320.dp)) {
         AndroidView(factory = { previewView }, modifier = Modifier.matchParentSize())
-        if (inference && current != null) DetectionFrame(current, Modifier.matchParentSize())
+        if (inference && current != null) {
+            if (roadCalibration == null || front) DetectionFrame(current, Modifier.matchParentSize())
+            else RoadScene(current, roadCalibration, Modifier.matchParentSize())
+        }
     }
     if (inference && current != null) {
         Text(stringResource(R.string.detections, current.detections.size))

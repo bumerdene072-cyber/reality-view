@@ -94,23 +94,34 @@ private fun RainyApp() {
                             Screen.Camera -> {
                                 Heading(R.string.camera)
                                 var network by rememberSaveable { mutableStateOf(false) }
+                                var external by rememberSaveable { mutableStateOf(false) }
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     FilterChip(!network, { network = false }, { Text(stringResource(R.string.device)) })
                                     FilterChip(network, { network = true }, { Text("RTSP") })
                                 }
                                 if (network) NetworkInput("single", R.string.network)
                                 else {
-                                    Toggle(R.string.selfie, front) {
+                                    Toggle(R.string.external_camera, external) { external = it }
+                                    if (external) Text(stringResource(R.string.external_help))
+                                    else Toggle(R.string.selfie, front) {
                                         front = it
                                         prefs.edit().putBoolean("front", it).apply()
                                     }
-                                    DeviceCamera(front, false, 200)
+                                    DeviceCamera(front, false, 200, external = external)
                                 }
                             }
                             Screen.Reality -> {
                                 Heading(R.string.reality)
-                                Text(stringResource(R.string.ai_description))
-                                DeviceCamera(front, true, if (fast) 130 else 300)
+                                val calibration = remember { readRoadCalibration(context) }
+                                var road by rememberSaveable { mutableStateOf(false) }
+                                val projectionAvailable = calibration != null && !front
+                                if (projectionAvailable) Toggle(R.string.road_view, road) { road = it }
+                                else OutlinedButton(onClick = { page = Screen.Settings.name }) {
+                                    Text(stringResource(R.string.calibration))
+                                }
+                                Text(stringResource(if (road && projectionAvailable) R.string.road_estimate else R.string.ai_description))
+                                DeviceCamera(front, true, if (fast) 130 else 300,
+                                    roadCalibration = calibration.takeIf { road && projectionAvailable })
                             }
                             Screen.Surround -> {
                                 Heading(R.string.surround)
@@ -145,6 +156,7 @@ private fun RainyApp() {
                                     fast = it
                                     prefs.edit().putBoolean("fast", it).apply()
                                 }
+                                RoadCalibrationSettings()
                                 Text(stringResource(R.string.privacy))
                             }
                         }
